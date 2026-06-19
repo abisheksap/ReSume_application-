@@ -72,35 +72,15 @@ public partial class MainWindow : Window
         System.Windows.MessageBox.Show("Session saved.", "ReSume");
     }
 
-    private async void RestoreButton_Click(object sender, RoutedEventArgs e)
+   private async void RestoreButton_Click(object sender, RoutedEventArgs e)
+{
+    if (SessionsListBox.SelectedItem is Session selected)
     {
-        if (SessionsListBox.SelectedItem is Session selected)
-        {
-            await _restoreEngine.RestoreSessionAsync(selected);
-
-            foreach (var bp in selected.BrowserProfiles)
-            {
-                var restoreMsg = JsonSerializer.Serialize(new
-                {
-                    action = "restore",
-                    data = bp.Windows.Select(w => new
-                    {
-                        focused = true,
-                        state = w.WindowState,
-                        left = w.Position.X,
-                        top = w.Position.Y,
-                        width = w.Position.Width,
-                        height = w.Position.Height,
-                        incognito = w.IsIncognito,
-                        tabs = w.Tabs.Select(t => new { url = t.Url })
-                    })
-                });
-                await _profileManager.SendToProfileAsync(bp.ProfileId, restoreMsg);
-            }
-
-            System.Windows.MessageBox.Show("Restoration started.", "ReSume");
-        }
+        await _restoreEngine.RestoreSessionAsync(selected);
+        await _restoreEngine.RestoreBrowserProfilesAsync(selected.BrowserProfiles, _profileManager);
+        System.Windows.MessageBox.Show("Restoration started.", "ReSume");
     }
+}
 
     private async void SaveShutdownButton_Click(object sender, RoutedEventArgs e)
     {
@@ -138,9 +118,13 @@ public partial class MainWindow : Window
         }
     }
 
-    private void DeleteSession_Click(object sender, RoutedEventArgs e)
+private void DeleteSession_Click(object sender, RoutedEventArgs e)
+{
+    e.Handled = true; // Prevent click from changing ListBox selection
+
+    if (sender is Button btn && btn.Tag is Guid sessionId)
     {
-        if (sender is Button btn && btn.Tag is Guid sessionId)
+        if (System.Windows.MessageBox.Show("Delete this session?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
         {
             _sessionManager.DeleteSession(sessionId);
             RefreshSessionList();
@@ -148,6 +132,7 @@ public partial class MainWindow : Window
             DetailPanel.Children.Add(new TextBlock { Text = "Select a session", FontStyle = FontStyles.Italic, Foreground = System.Windows.Media.Brushes.Gray });
         }
     }
+}
 
     private async void RunDiagnostics_Click(object sender, RoutedEventArgs e)
     {

@@ -1,18 +1,28 @@
-<Window x:Class="ReSume.Views.NamePromptWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Name your session" Width="350" Height="150" WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize" ShowInTaskbar="False">
-    <Grid Margin="15">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-        <TextBlock Text="Enter a name for this session:" Margin="0,0,0,10"/>
-        <TextBox x:Name="SessionNameBox" Grid.Row="1" Margin="0,0,0,10"/>
-        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,30,0,0">
-            <Button Content="OK" IsDefault="True" Width="70" Click="OkButton_Click" Margin="0,0,10,0"/>
-            <Button Content="Cancel" IsCancel="True" Width="70"/>
-        </StackPanel>
-    </Grid>
-</Window>
+using System.Windows;
+
+namespace ReSume.Views;
+
+public partial class NamePromptWindow : Window
+{
+    public string SessionName { get; private set; } = string.Empty;
+
+    public NamePromptWindow(string defaultName)
+    {
+        InitializeComponent();
+        SessionNameBox.Text = defaultName;
+        SessionNameBox.Focus();
+        SessionNameBox.SelectAll();
+    }
+
+    private void OkButton_Click(object sender, RoutedEventArgs e)
+    {
+        SessionName = SessionNameBox.Text.Trim();
+        if (string.IsNullOrWhiteSpace(SessionName))
+        {
+            MessageBox.Show("Please enter a name.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+        DialogResult = true;
+        Close();
+    }
+}
