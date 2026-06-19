@@ -1,0 +1,9 @@
+﻿{
+    "path":  "D:\\DEFAULT\\DESKTOP\\ReSume\\Newfolder\\ReSume\\src\\ReSume.NativeHost\\bin\\Debug\\net8.0\\ReSume.NativeHost.exe",
+    "description":  "ReSume Native Messaging Host (Local Dev)",
+    "name":  "com.resume.nativehost",
+    "allowed_origins":  [
+                            "chrome-extension://imnnfjieeeleaeddmeckobeohemppjgb/"
+                        ],
+    "type":  "stdio"
+}

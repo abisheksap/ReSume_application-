@@ -1,0 +1,10 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Product Id="*" Name="ReSume" Language="1033" Version="1.0.0" Manufacturer="ReSume" UpgradeCode="YOUR-UPGRADE-GUID">
+    <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" />
+    <MajorUpgrade DowngradeErrorMessage="A newer version is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+    <Feature Id="MainFeature" Title="ReSume" Level="1">
+      <ComponentGroupRef Id="MainComponents" />
+    </Feature>
+  </Product>
+</Wix>

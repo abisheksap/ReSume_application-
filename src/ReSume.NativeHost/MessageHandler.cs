@@ -1,0 +1,1 @@
+namespace ReSume.NativeHost; public class MessageHandler {}

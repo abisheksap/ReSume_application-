@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>ReSume.NativeHost</RootNamespace>
+    <AssemblyName>ReSume.NativeHost</AssemblyName>
+  </PropertyGroup>
+</Project>

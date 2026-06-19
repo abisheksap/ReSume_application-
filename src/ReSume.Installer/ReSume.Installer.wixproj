@@ -1,0 +1,10 @@
+<Project Sdk="WixToolset.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Product.wxs" />
+    <Compile Include="Components.wxs" />
+  </ItemGroup>
+</Project>

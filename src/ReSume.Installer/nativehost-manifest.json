@@ -1,0 +1,7 @@
+{
+  "name": "com.resume.nativehost",
+  "description": "ReSume Native Messaging Host",
+  "path": "C:\\Program Files\\ReSume\\NativeHost\\ReSume.NativeHost.exe",
+  "type": "stdio",
+  "allowed_origins": [ "chrome-extension://imnnfjieeeleaeddmeckobeohemppjgb/" ]
+}
