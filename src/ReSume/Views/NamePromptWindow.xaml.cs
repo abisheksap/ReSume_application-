@@ -1,0 +1,28 @@
+using System.Windows;
+
+namespace ReSume.Views;
+
+public partial class NamePromptWindow : Window
+{
+    public string SessionName { get; private set; } = string.Empty;
+
+    public NamePromptWindow(string defaultName)
+    {
+        InitializeComponent();
+        SessionNameBox.Text = defaultName;
+        SessionNameBox.Focus();
+        SessionNameBox.SelectAll();
+    }
+
+    private void OkButton_Click(object sender, RoutedEventArgs e)
+    {
+        SessionName = SessionNameBox.Text.Trim();
+        if (string.IsNullOrWhiteSpace(SessionName))
+        {
+            // Fallback to a default rather than forcing the user to retype
+            SessionName = "Unnamed session";
+        }
+        DialogResult = true;
+        Close();
+    }
+}

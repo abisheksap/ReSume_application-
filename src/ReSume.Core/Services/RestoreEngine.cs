@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text.Json;
+using System.Text.Json;          // <-- add this
 using System.Threading.Tasks;
 using ReSume.Core.Interop;
 using ReSume.Core.Models;
@@ -91,9 +91,7 @@ public class RestoreEngine
         }
     }
 
-    /// <summary>
-    /// Restores browser windows by sending restore commands to the respective profile's native host.
-    /// </summary>
+    /// <summary>Restores browser windows via the pipe to the native host.</summary>
     public async Task RestoreBrowserProfilesAsync(List<BrowserProfile> browserProfiles, ProfileConnectionManager profileManager)
     {
         foreach (var bp in browserProfiles)
@@ -117,9 +115,37 @@ public class RestoreEngine
         }
     }
 
-    // … (other helper methods remain unchanged) …
-    private IntPtr FindWindowByProcessId(int processId) { /* unchanged */ }
+    // ----- Helper methods unchanged -----
+    private IntPtr FindWindowByProcessId(int processId)
+    {
+        IntPtr hWnd = IntPtr.Zero;
+        EnumWindows(delegate (IntPtr wnd, IntPtr param)
+        {
+            uint pid;
+            User32.GetWindowThreadProcessId(wnd, out pid);
+            if (pid == processId && User32.IsWindowVisible(wnd))
+            {
+                hWnd = wnd;
+                return false;
+            }
+            return true;
+        }, IntPtr.Zero);
+        return hWnd;
+    }
+
     private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
-    [DllImport("user32.dll")] private static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
-    private static string ExtractArguments(string? commandLine, string? exePath) { /* unchanged */ }
+    [DllImport("user32.dll")]
+    private static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
+
+    private static string ExtractArguments(string? commandLine, string? exePath)
+    {
+        if (string.IsNullOrEmpty(commandLine) || string.IsNullOrEmpty(exePath))
+            return string.Empty;
+        string cmd = commandLine.Trim();
+        if (cmd.StartsWith($"\"{exePath}\"", StringComparison.OrdinalIgnoreCase))
+            return cmd.Substring(exePath.Length + 2).Trim();
+        if (cmd.StartsWith(exePath, StringComparison.OrdinalIgnoreCase))
+            return cmd.Substring(exePath.Length).Trim();
+        return cmd;
+    }
 }

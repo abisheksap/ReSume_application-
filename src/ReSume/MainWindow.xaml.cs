@@ -7,7 +7,6 @@ using ReSume.Core.Models;
 using ReSume.Core.Services;
 using ReSume.Views;
 using System.IO;
-using System.Text.Json;
 
 namespace ReSume;
 
@@ -57,7 +56,7 @@ public partial class MainWindow : Window
         string defaultName = "Manual save " + DateTime.Now.ToString("HH:mm");
         var nameDialog = new NamePromptWindow(defaultName) { Owner = this };
         if (nameDialog.ShowDialog() != true)
-            return; // user cancelled
+            return;
 
         var session = new Session
         {
@@ -72,15 +71,18 @@ public partial class MainWindow : Window
         System.Windows.MessageBox.Show("Session saved.", "ReSume");
     }
 
-   private async void RestoreButton_Click(object sender, RoutedEventArgs e)
-{
-    if (SessionsListBox.SelectedItem is Session selected)
+    private async void RestoreButton_Click(object sender, RoutedEventArgs e)
     {
+        if (SessionsListBox.SelectedItem is not Session selected)
+        {
+            System.Windows.MessageBox.Show("Please select a session first.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
         await _restoreEngine.RestoreSessionAsync(selected);
         await _restoreEngine.RestoreBrowserProfilesAsync(selected.BrowserProfiles, _profileManager);
         System.Windows.MessageBox.Show("Restoration started.", "ReSume");
     }
-}
 
     private async void SaveShutdownButton_Click(object sender, RoutedEventArgs e)
     {
@@ -98,6 +100,9 @@ public partial class MainWindow : Window
             DetailPanel.Children.Add(new TextBlock { Text = $"Source: {session.Source}" });
             DetailPanel.Children.Add(new TextBlock { Text = $"Applications ({session.Applications.Count})" });
 
+            if (session.Applications.Count == 0)
+                DetailPanel.Children.Add(new TextBlock { Text = "  (no applications captured)", FontStyle = FontStyles.Italic });
+
             foreach (var app in session.Applications)
             {
                 string docs = app.DocumentPaths.Count > 0 ? string.Join(", ", app.DocumentPaths) : "no doc";
@@ -108,7 +113,7 @@ public partial class MainWindow : Window
             {
                 DetailPanel.Children.Add(new TextBlock { Text = "Browser Profiles" });
                 foreach (var bp in session.BrowserProfiles)
-                    DetailPanel.Children.Add(new TextBlock { Text = $"  {bp.ProfileName} ({bp.Windows.Count} windows)" });
+                    DetailPanel.Children.Add(new TextBlock { Text = $"  {bp.ProfileName} ({bp.Windows.Count} windows, {bp.Windows.Sum(w => w.Tabs.Count)} tabs)" });
             }
         }
         else
@@ -118,21 +123,21 @@ public partial class MainWindow : Window
         }
     }
 
-private void DeleteSession_Click(object sender, RoutedEventArgs e)
-{
-    e.Handled = true; // Prevent click from changing ListBox selection
-
-    if (sender is Button btn && btn.Tag is Guid sessionId)
+    private void DeleteSession_Click(object sender, RoutedEventArgs e)
     {
-        if (System.Windows.MessageBox.Show("Delete this session?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+        e.Handled = true; // stop click from changing listbox selection
+
+        if (sender is Button btn && btn.Tag is Guid sessionId)
         {
-            _sessionManager.DeleteSession(sessionId);
-            RefreshSessionList();
-            DetailPanel.Children.Clear();
-            DetailPanel.Children.Add(new TextBlock { Text = "Select a session", FontStyle = FontStyles.Italic, Foreground = System.Windows.Media.Brushes.Gray });
+            if (System.Windows.MessageBox.Show("Delete this session?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+            {
+                _sessionManager.DeleteSession(sessionId);
+                RefreshSessionList();
+                DetailPanel.Children.Clear();
+                DetailPanel.Children.Add(new TextBlock { Text = "Select a session", FontStyle = FontStyles.Italic, Foreground = System.Windows.Media.Brushes.Gray });
+            }
         }
     }
-}
 
     private async void RunDiagnostics_Click(object sender, RoutedEventArgs e)
     {
@@ -141,12 +146,12 @@ private void DeleteSession_Click(object sender, RoutedEventArgs e)
         DiagnosticsPanel.Children.Clear();
         foreach (var check in checks)
         {
-            var sp = new StackPanel { Orientation = System.Windows.Controls.Orientation.Horizontal, Margin = new Thickness(0, 2, 0, 2) };
+            var sp = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 2, 0, 2) };
             sp.Children.Add(new TextBlock { Text = check.Passed ? "✅" : "❌", Width = 20 });
             sp.Children.Add(new TextBlock { Text = $"{check.Name}: {check.Details}", Width = 350 });
             if (check.CanRepair && !check.Passed)
             {
-                var btn = new System.Windows.Controls.Button { Content = "Repair", Width = 70 };
+                var btn = new Button { Content = "Repair", Width = 70 };
                 btn.Click += (s, ev) =>
                 {
                     try

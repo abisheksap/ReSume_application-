@@ -34,7 +34,7 @@ public class ProfileConnectionManager
             int read = await pipe.ReadAsync(buffer, 0, buffer.Length);
             string handshakeJson = Encoding.UTF8.GetString(buffer, 0, read);
 
-            // Use a DTO that matches what NativeHost actually sends
+            // DTO that matches what NativeHost actually sends
             var handshake = JsonSerializer.Deserialize<HandshakeMessage>(handshakeJson);
             if (handshake == null) return;
 
@@ -63,7 +63,7 @@ public class ProfileConnectionManager
                 string msg = Encoding.UTF8.GetString(msgBuffer, 0, msgRead);
                 MessageReceived?.Invoke(profile, msg);
 
-                // If it's a capture response, update the profile's windows/tabs
+                // If it's a capture response, update the profile with window/tab data
                 try
                 {
                     var captureData = JsonSerializer.Deserialize<CaptureResponse>(msg);
@@ -88,10 +88,10 @@ public class ProfileConnectionManager
                                 GroupColor = t.groupColor
                             }).ToList() ?? new List<TabInfo>()
                         }).ToList();
-                        _profiles[profile.ProfileId] = profile; // update
+                        _profiles[profile.ProfileId] = profile;
                     }
                 }
-                catch { /* ignore invalid JSON */ }
+                catch { /* ignore malformed JSON */ }
             }
         }
         catch { }
@@ -105,13 +105,11 @@ public class ProfileConnectionManager
         }
     }
 
-    /// <summary>Returns all currently connected browser profiles.</summary>
     public List<BrowserProfile> GetConnectedProfiles()
     {
         return _profiles.Values.Where(p => p.IsConnected).ToList();
     }
 
-    /// <summary>Sends a JSON message to a specific profile's native host.</summary>
     public async Task SendToProfileAsync(string profileId, string message)
     {
         if (_connections.TryGetValue(profileId, out var pipe) && pipe.IsConnected)
@@ -121,8 +119,7 @@ public class ProfileConnectionManager
         }
     }
 
-    // === DTOs for deserialization ===
-
+    // --- DTOs ---
     private class HandshakeMessage
     {
         public string ProfileDirectory { get; set; } = string.Empty;
